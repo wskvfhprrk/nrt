@@ -68,6 +68,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
                 ByteBuf bufff = Unpooled.buffer();
                 bufff.writeBytes(message.getBytes());
                 channel.writeAndFlush(bufff);
+                bufff.release();
                 return;
             }
             log.error("无法找到与 IP 地址 {} 相关联的通道！", clientIp);

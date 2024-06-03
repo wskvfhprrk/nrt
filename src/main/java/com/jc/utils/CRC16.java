@@ -7,6 +7,51 @@ package com.jc.utils;
  */
 public class CRC16 {
     /**
+     * 验证 Modbus RTU 数据的 CRC16 校验码
+     * @param data 待验证的数据
+     * @return 如果校验通过，返回 true；否则返回 false
+     */
+    public static boolean validateCRC(byte[] data) {
+        // 如果数据不满足最小长度要求，直接返回 false
+        if (data.length < 4) {
+            return false;
+        }
+        String hexString = HexConvert.BinaryToHexString(data).replaceAll(" ","");
+        String crc=hexString.substring(hexString.length()-4);
+        String str=hexString.substring(0,hexString.length()-4);
+        byte[] bytes = HexConvert.hexStringToBytes(str);
+        String crc3 = getCRC3(bytes);
+        // 返回 CRC 校验结果
+        return crc.equals(crc3);
+    }
+
+    /**
+     * 获取除验证码前面有效信息
+     * @param data
+     * @return
+     */
+    public static String getData(byte[] data) {
+        // 如果数据不满足最小长度要求，直接返回 false
+        if (data.length < 4) {
+            return null;
+        }
+        String hexString = HexConvert.BinaryToHexString(data).replaceAll(" ","");
+        String str=hexString.substring(0,hexString.length()-4);
+        // 返回 CRC 校验结果
+        return str;
+    }
+
+    /**
+     * 16进制字符串生成modbus类型的byte[]
+     * @param hexString HEX进制字符串——未加入modbusrtu验证前
+     * @return 加入modbusrtu验证后的数据转为byte[]
+     */
+    public static byte[] getModbusrtuData(String hexString){
+        String crc3 = getCRC3(HexConvert.hexStringToBytes(hexString));
+        return HexConvert.hexStringToBytes(hexString+crc3);
+    }
+
+    /**
      * 计算CRC16校验码
      *
      * @param bytes
@@ -134,7 +179,8 @@ public class CRC16 {
 //        System.out.println("hex=="+hexString);
 //        String str16 = encode("0203020200");
         byte[] bytes1 = HexConvert.hexStringToBytes("020302020A");
-        System.out.println(getCRC3(bytes1));
+        System.out.println("得到modbus验证值："+getCRC3(bytes1));
+
 //        byte[] bytes = str16.getBytes();
 //        System.out.println("str16:" + str16);
 
@@ -143,6 +189,13 @@ public class CRC16 {
 //        System.out.println(getCRC(bytes));
 //        System.out.println(getCRC2(bytes));
 //        System.out.println(getCRC3(bytes));
+
+        // 示例数据，假设已经从 Modbus RTU 设备读取到的数据
+        byte[] data = HexConvert.hexStringToBytes("09 10 03 E8 00 03 06 00 09 D0 00 FF FF 96 41".replaceAll(" ",""));
+        // 验证数据的 CRC16 校验码
+        System.out.println("有用的hex字符串数据："+getData(data));
+        boolean isValid = validateCRC(data);
+        System.out.println("modbusrtu数据验证结果为: " + isValid);
 
     }
 }
