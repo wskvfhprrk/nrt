@@ -1,6 +1,7 @@
 package com.jc.netty.server;
 
 import com.jc.service.impl.IODeviceHandler;
+import com.jc.service.impl.LanTo485Handler;
 import com.jc.service.impl.RelayDeviceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ public class FicationProcessing {
     private RelayDeviceHandler relayDeviceHandler; // 继电器设备处理器
     @Value("${lanTo485}")
     private String lanTo485; // 485设备IP地址（暂未使用）
+    @Autowired
+    private LanTo485Handler lanTo485Handler;
 
     /**
      * 分类处理方法
@@ -43,6 +46,9 @@ public class FicationProcessing {
         } else if (clientIp.equals(relayIp)) {
             // 如果客户端IP地址匹配继电器设备IP地址，则交由继电器设备处理器处理消息
             relayDeviceHandler.handle(message, flag);
+        } else if (clientIp.equals(lanTo485)) {
+            // 如果客户端IP地址匹配继电器设备IP地址，则交由继电器设备处理器处理消息
+            lanTo485Handler.handle(message, flag);
         } else {
             // 其他情况视为未知设备IP地址，记录错误日志
             log.error("未知的设备IP地址：{}", clientIp);
