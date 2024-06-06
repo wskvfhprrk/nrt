@@ -39,8 +39,7 @@ public class StepperMotorController {
      */
     @GetMapping("modificationSpeed")
     public String modificationSpeed(int no, int speed){
-        stepperMotor.modificationSpeed(no,speed);
-        return "ok";
+        return stepperMotor.modificationSpeed(no,speed);
     }
 
     /**

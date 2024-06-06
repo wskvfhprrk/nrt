@@ -48,7 +48,7 @@ public class StepperMotor {
         // 发送指令
         nettyServerHandler.sendMessageToClient(lanTo485, sb.toString(), true);
         try {
-            Thread.sleep(500);
+            Thread.sleep(50);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -74,10 +74,14 @@ public class StepperMotor {
      * @param no     步进电机编号
      * @param speed  步进电机速度
      */
-    public void modificationSpeed(int no, int speed){
+    public String modificationSpeed(int no, int speed){
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
-            return; // 添加return，防止继续执行
+            return "步进电机编号不存在"; // 添加return，防止继续执行
+        }
+        if(speed>=500){
+            log.error("设置速度：{}超过最大速度500了",speed);
+            return "设置速度超过最大速度500了";
         }
         // 01 06 00 05 00 01
         String noStr = Integer.toHexString(no).toUpperCase();
@@ -95,6 +99,7 @@ public class StepperMotor {
         sb.append(crc);
         log.info("步进电机速度指令：{}",sb);
         nettyServerHandler.sendMessageToClient(lanTo485, sb.toString(), true);
+        return "ok";
     }
 
     /**
