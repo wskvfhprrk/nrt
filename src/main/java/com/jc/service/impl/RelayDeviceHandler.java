@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+/**
+ * 继电器设备处理类
+ * 实现了DeviceHandler接口，提供了继电器的打开、关闭及定时关闭功能
+ */
 @Service
 @Slf4j
 public class RelayDeviceHandler implements DeviceHandler {
