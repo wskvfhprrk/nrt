@@ -99,6 +99,19 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof java.net.SocketException && cause.getMessage().contains("Connection reset")) {
+            InetSocketAddress clientAddress = (InetSocketAddress) ctx.channel().remoteAddress();
+            String clientIp = clientAddress.getAddress().toString().replace("/", "");
+            log.warn("客户端{}连接已重置：{}", clientIp, cause.getMessage());
+        } else {
+            log.error("未处理的异常：", cause);
+        }
+        // 关闭上下文
+        ctx.close();
+    }
+
     /**
      * 判断字符串是否为16进制字符串
      *
@@ -126,8 +139,8 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
      * 发送消息到指定客户端
      *
      * @param clientIp 客户端IP地址
-     * @param message 消息内容
-     * @param hex 是否为16进制消息
+     * @param message  消息内容
+     * @param hex      是否为16进制消息
      */
     public void sendMessageToClient(String clientIp, String message, Boolean hex) {
         for (Map.Entry<String, Channel> entry : clientMap.entrySet()) {
