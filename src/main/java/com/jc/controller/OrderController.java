@@ -1,7 +1,7 @@
 package com.jc.controller;
 
 import com.jc.entity.Order;
-import com.jc.netty.NettyServerHandler;
+import com.jc.netty.server.NettyServerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,14 +18,14 @@ public class OrderController {
 
     @Autowired
     private NettyServerHandler nettyServerHandler;
-    @Value("${lan_to_485}")
+    @Value("${lanTo485}")
     private String lan485;
 
     @PostMapping
     public ResponseEntity<String> submitOrder(@RequestBody Order order) {
         // 在这里处理订单逻辑，例如保存到数据库或其他操作
         log.info("收到订单: " + order);
-        nettyServerHandler.sendMessageToClient(lan485,order.toString());
+        nettyServerHandler.sendMessageToClient(lan485,order.toString(),false);
         return new ResponseEntity<>("订单提交成功", HttpStatus.OK);
     }
 }

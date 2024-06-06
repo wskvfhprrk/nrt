@@ -191,7 +191,7 @@ public class CRC16 {
 //        System.out.println(getCRC3(bytes));
 
         // 示例数据，假设已经从 Modbus RTU 设备读取到的数据
-        byte[] data = HexConvert.hexStringToBytes("09 10 03 E8 00 03 06 00 09 D0 00 FF FF 96 41".replaceAll(" ",""));
+        byte[] data = HexConvert.hexStringToBytes("48 3A 01 41 01 00 00 00 00 00 00 00 C5 45 44 ".replaceAll(" ",""));
         // 验证数据的 CRC16 校验码
         System.out.println("有用的hex字符串数据："+getData(data));
         boolean isValid = validateCRC(data);
