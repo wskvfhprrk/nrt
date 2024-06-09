@@ -1,9 +1,10 @@
 package com.jc.service.impl;
 
+import com.jc.constants.StepperMotorConstants;
+import com.jc.enums.SignalLevel;
 import com.jc.service.DeviceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,8 @@ public class IODeviceHandler implements DeviceHandler {
 
     private String ioStatus;
 
-    public IODeviceHandler(){
-        this.ioStatus="0";
+    public IODeviceHandler() {
+        this.ioStatus = SignalLevel.LOW.getValue();
     }
 
     public String getIoStatus() {
@@ -37,7 +38,7 @@ public class IODeviceHandler implements DeviceHandler {
     @Override
     public void handle(String message, boolean isHex) {
         if (isHex) {
-             log.info(" HEX消息: {}", message);
+            log.info("HEX消息: {}", message);
             // 查中间8位，从第6位开始查询
             String[] split = message.split(" ");
             // 将字符串分割为8个部分，每个部分4个字符
@@ -49,20 +50,25 @@ public class IODeviceHandler implements DeviceHandler {
                 }
             }
             log.info("传感器的高低电平：{}", sb);
-            //ioStatus赋值，以便其它类看到
-            this.ioStatus= sb.toString();
+            // ioStatus赋值，以便其它类看到
+            this.ioStatus = sb.toString();
             sensorInstructionProcessing(sb);
         } else {
             log.info("普通消息: {}", message);
         }
     }
 
+    /**
+     * 处理传感器指令
+     *
+     * @param sb 传感器状态信息
+     */
     private void sensorInstructionProcessing(StringBuffer sb) {
         String[] split = sb.toString().split(",");
-        //如果碗的极限传感器高电平，要停止碗步进电机
-        if (split[2].equals("1") || split[3].equals("1")) {
-            log.info("到达限位点，停止碗升降的步时电机");
-            stepperMotor.stop(2);
+        // 如果碗的极限传感器高电平，要停止碗步进电机
+        if (split[2].equals(SignalLevel.HIGH.getValue()) || split[3].equals(SignalLevel.HIGH.getValue())) {
+            log.info("到达限位点，停止碗升降的步进电机");
+            stepperMotor.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
         }
     }
 
@@ -86,41 +92,15 @@ public class IODeviceHandler implements DeviceHandler {
         char firstChar = hexStr.charAt(0);
         char secondChar = hexStr.charAt(1);
 
-//        // 根据第二位字符判断 startIo 是否为高电平
-        if (secondChar == '1' || secondChar == '5') {
-            sb.append("1,");
-//            log.info("引脚 {} 为高电平", startIo);
-        } else {
-            sb.append("0,");
-//            log.info("引脚 {} 为低电平", startIo);
-        }
+        // 根据第二位字符判断 startIo 是否为高电平
+        sb.append((secondChar == '1' || secondChar == '5') ? SignalLevel.HIGH.getValue() : SignalLevel.LOW.getValue()).append(",");
+        // 根据第二位字符判断 startIo + 1 是否为高电平
+        sb.append((secondChar == '4' || secondChar == '5') ? SignalLevel.HIGH.getValue() : SignalLevel.LOW.getValue()).append(",");
+        // 根据第一位字符判断 startIo + 2 是否为高电平
+        sb.append((firstChar == '1' || firstChar == '5') ? SignalLevel.HIGH.getValue() : SignalLevel.LOW.getValue()).append(",");
+        // 根据第一位字符判断 endIo 是否为高电平
+        sb.append((firstChar == '4' || firstChar == '5') ? SignalLevel.HIGH.getValue() : SignalLevel.LOW.getValue()).append(",");
 
-//        // 根据第二位字符判断 startIo + 1 是否为高电平
-        if (secondChar == '4' || secondChar == '5') {
-            sb.append("1,");
-//            log.info("引脚 {} 为高电平", startIo + 1);
-        } else {
-            sb.append("0,");
-//            log.info("引脚 {} 为低电平", startIo + 1);
-        }
-
-//        // 根据第一位字符判断 startIo + 2 是否为高电平
-        if (firstChar == '1' || firstChar == '5') {
-            sb.append("1,");
-//            log.info("引脚 {} 为高电平", startIo + 2);
-        } else {
-            sb.append("0,");
-//            log.info("引脚 {} 为低电平", startIo + 2);
-        }
-
-//        // 根据第一位字符判断 endIo 是否为高电平
-        if (firstChar == '4' || firstChar == '5') {
-            sb.append("1,");
-//            log.info("引脚 {} 为高电平", endIo);
-        } else {
-            sb.append("0,");
-//            log.info("引脚 {} 为低电平", endIo);
-        }
         return sb;
     }
 }
