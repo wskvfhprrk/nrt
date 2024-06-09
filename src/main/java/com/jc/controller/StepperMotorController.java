@@ -62,7 +62,7 @@ public class StepperMotorController {
     }
     @GetMapping("reset")
     public String reset(){
-        stepperMotor.reset();
+        stepperMotor.bowlReset();
         return "ok";
     }
 }
