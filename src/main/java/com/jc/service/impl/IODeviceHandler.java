@@ -59,8 +59,8 @@ public class IODeviceHandler implements DeviceHandler {
 
     private void sensorInstructionProcessing(StringBuffer sb) {
         String[] split = sb.toString().split(",");
-        //如果第三个传感器高电平，要停止碗步进电机
-        if (split[2].equals("1") || split[3].equals("1")) {
+        //如果碗的三个传感器高电平，要停止碗步进电机
+        if (split[1].equals("1") ||split[2].equals("1") || split[3].equals("1")) {
             log.info("到达限位点，停止碗升降的步时电机");
             stepperMotor.stop(2);
         }

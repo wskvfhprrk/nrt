@@ -52,4 +52,12 @@ public class StepperMotorController {
         stepperMotor.stop(no);
         return "ok";
     }
+    @GetMapping("bowlRising")
+    public String bowlRising(){
+       return stepperMotor.bowlRising();
+    }
+    @GetMapping("bowlDescent")
+    public String bowlDescent(){
+        return stepperMotor.bowlDescent();
+    }
 }

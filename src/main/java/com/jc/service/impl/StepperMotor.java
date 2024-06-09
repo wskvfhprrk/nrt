@@ -20,29 +20,38 @@ public class StepperMotor {
     private IODeviceHandler ioDeviceHandler;
 
     @Autowired
-    public StepperMotor(IODeviceHandler ioDeviceHandler){
-        this.ioDeviceHandler=ioDeviceHandler;
+    public StepperMotor(IODeviceHandler ioDeviceHandler) {
+        this.ioDeviceHandler = ioDeviceHandler;
+    }
+
+
+    public String bowlRising() {
+       return this.startStepperMotor(2, false, 0);
+    }
+
+    public String bowlDescent() {
+        return this.startStepperMotor(2, true, 0);
     }
 
     /**
      * 启动步进电机
      *
-     * @param no               步进电机编号
-     * @param positiveOrNegative   步进电机转动方向，true表示正转，false表示反转
-     * @param numberOfPulses   脉冲数量
+     * @param no                 步进电机编号
+     * @param positiveOrNegative 步进电机转动方向，true表示正转，false表示反转
+     * @param numberOfPulses     脉冲数量
      */
-    public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses){
+    public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses) {
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
-            return "编号"+no+"步进电机不存在"; // 添加return，防止继续执行
+            return "编号" + no + "步进电机不存在"; // 添加return，防止继续执行
         }
         //如果继电器3为高电平，严禁电机2向下运行true,如果4为高电平严禁电机3向上运行false
         String[] split = ioDeviceHandler.getIoStatus().split(",");
-        if(split[2].equals("1") && no==2 && positiveOrNegative){
+        if (split[2].equals("1") && no == 2 && positiveOrNegative) {
             log.error("碗已经到最低位，不能再向下走了！");
             return "碗已经到最低位，不能再向下走了！";
         }
-        if(split[3].equals("1") && no==2 && !positiveOrNegative){
+        if (split[3].equals("1") && no == 2 && !positiveOrNegative) {
             log.error("碗已经到最高位，不能再向上走了！");
             return "碗已经到最高位，不能再向上走了！";
         }
@@ -58,9 +67,9 @@ public class StepperMotor {
         sb.append("060007");
         String pulese = String.format("%04X", numberOfPulses).toUpperCase();
         sb.append(pulese);
-        String string = CRC16.getModbusrtuString(sb.toString().replaceAll(" ",""));
+        String string = CRC16.getModbusrtuString(sb.toString().replaceAll(" ", ""));
         sb.append(string);
-        log.info("脉冲指令：{}",sb);
+        log.info("脉冲指令：{}", sb);
         // 发送指令
         nettyServerHandler.sendMessageToClient(lanTo485, sb.toString(), true);
         try {
@@ -69,18 +78,18 @@ public class StepperMotor {
             e.printStackTrace();
         }
         // 发送正反转
-        StringBuffer stringBuffer=new StringBuffer(noStr);
+        StringBuffer stringBuffer = new StringBuffer(noStr);
         stringBuffer.append("0600");
         // 正反转指令
-        if(positiveOrNegative){
+        if (positiveOrNegative) {
             stringBuffer.append("00");
-        }else {
+        } else {
             stringBuffer.append("01");
         }
         stringBuffer.append("0001");
-        String crc = CRC16.getModbusrtuString(stringBuffer.toString().replaceAll(" ",""));
+        String crc = CRC16.getModbusrtuString(stringBuffer.toString().replaceAll(" ", ""));
         stringBuffer.append(crc);
-        log.info("步进电机转动指令：{}",stringBuffer);
+        log.info("步进电机转动指令：{}", stringBuffer);
         nettyServerHandler.sendMessageToClient(lanTo485, stringBuffer.toString(), true);
         return "ok";
     }
@@ -88,17 +97,17 @@ public class StepperMotor {
     /**
      * 修改步进电机速度
      *
-     * @param no     步进电机编号
-     * @param speed  步进电机速度
+     * @param no    步进电机编号
+     * @param speed 步进电机速度
      */
-    public String modificationSpeed(int no, int speed){
+    public String modificationSpeed(int no, int speed) {
 
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
             return "步进电机编号不存在"; // 添加return，防止继续执行
         }
-        if(speed>=500){
-            log.error("设置速度：{}超过最大速度500了",speed);
+        if (speed >= 500) {
+            log.error("设置速度：{}超过最大速度500了", speed);
             return "设置速度超过最大速度500了";
         }
         // 01 06 00 05 00 01
@@ -107,15 +116,15 @@ public class StepperMotor {
         if (noStr.length() < 2) {
             noStr = "0" + noStr;
         }
-        StringBuffer sb=new StringBuffer(noStr);
+        StringBuffer sb = new StringBuffer(noStr);
         // 添加编码
         sb.append("060005");
         String speedStr = Integer.toHexString(speed).toUpperCase();
-        speedStr=String.format("%04X", Integer.parseInt(speedStr, 16)).toUpperCase();
+        speedStr = String.format("%04X", Integer.parseInt(speedStr, 16)).toUpperCase();
         sb.append(speedStr);
-        String crc = CRC16.getModbusrtuString(sb.toString().replaceAll(" ",""));
+        String crc = CRC16.getModbusrtuString(sb.toString().replaceAll(" ", ""));
         sb.append(crc);
-        log.info("步进电机速度指令：{}",sb);
+        log.info("步进电机速度指令：{}", sb);
         nettyServerHandler.sendMessageToClient(lanTo485, sb.toString(), true);
         return "ok";
     }
@@ -123,9 +132,9 @@ public class StepperMotor {
     /**
      * 停止步进电机
      *
-     * @param no   步进电机编号
+     * @param no 步进电机编号
      */
-    public void stop(int no){
+    public void stop(int no) {
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
             return; // 添加return，防止继续执行
@@ -136,12 +145,12 @@ public class StepperMotor {
         if (noStr.length() < 2) {
             noStr = "0" + noStr;
         }
-        StringBuffer sb=new StringBuffer(noStr);
+        StringBuffer sb = new StringBuffer(noStr);
         // 添加停止
         sb.append("0600020001");
-        String crc = CRC16.getModbusrtuString(sb.toString().replaceAll(" ",""));
+        String crc = CRC16.getModbusrtuString(sb.toString().replaceAll(" ", ""));
         sb.append(crc);
-        log.info("步进电机停机指令：{}",sb);
+        log.info("步进电机停机指令：{}", sb);
         nettyServerHandler.sendMessageToClient(lanTo485, sb.toString(), true);
     }
 }
