@@ -39,6 +39,61 @@ public class StepperMotor {
     public String bowlDescent() {
         return this.startStepperMotor(StepperMotorConstants.BOWL_CONTROLLER_NO, true, 0);
     }
+    /**
+     * 执行初始化检测或连续出碗检查的方法。
+     *
+     * @param isInitialization 如果为 true，执行初始化检测；如果为 false，执行连续出碗检查。
+     */
+    public void check(boolean isInitialization) {
+        if (isInitialization) {
+            // 初始化检测
+            bowlReset();
+        } else {
+            // 连续出碗检查
+            continuousBowlCheck();
+        }
+    }
+
+    /**
+     * 连续出碗检查方法，用于检测碗是否已经升到位，并在需要时进行降碗操作直到碗低出传感器为止。
+     */
+    private void continuousBowlCheck() {
+        // 获取传感器状态
+        String ioStatus = ioDeviceHandler.getIoStatus();
+        if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+            log.error("无法获取传感器的值！");
+            return;
+        }
+        // 解析传感器状态字符串
+        String[] split = ioStatus.split(",");
+        boolean bowlSensor = split[1].equals(SignalLevel.HIGH.getValue()); // 碗传感器状态
+
+        // 如果传感器2为高电平，说明碗已经升到位
+        if (bowlSensor) {
+            // 如果同时轨道最低极限点为低电平，降碗直到碗低出传感器为止
+            if (!split[2].equals(SignalLevel.HIGH.getValue())) {
+                this.bowlDescent();
+                // 循环等待传感器2变为低电平
+                while (true) {
+                    String newIoStatus = ioDeviceHandler.getIoStatus();
+                    if (newIoStatus.split(",")[1].equals(SignalLevel.LOW.getValue())) {
+                        this.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+                        break;
+                    }
+                    try {
+                        Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS); // 每100毫秒检查一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                log.info("碗已经升到位，无需进行升碗操作！");
+            }
+            return;
+        }
+        // 如果传感器2为低电平，说明碗还未升到位
+        log.error("碗未升到位，请检查传感器2状态！");
+    }
 
     /**
      * 重置碗
@@ -46,7 +101,7 @@ public class StepperMotor {
     public void bowlReset() {
         // 获取传感器状态
         String ioStatus = ioDeviceHandler.getIoStatus();
-        while (ioStatus.equals(SignalLevel.LOW)) {
+        if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
             log.error("无法获取传感器的值！");
             // 先重置传感器
             nettyServerHandler.sendMessageToClient(ioIp, StepperMotorConstants.RESET_COMMAND, true);
@@ -68,7 +123,25 @@ public class StepperMotor {
 
         // 如果传感器2为高电平，说明碗已经升到位
         if (bowlSensor) {
-            log.info("碗已经升到位，无需进行升碗操作！");
+            // 如果同时轨道最低极限点为低电平，降碗直到碗低出传感器为止
+            if (!lowerLimit) {
+                this.bowlDescent();
+                // 循环等待传感器2变为低电平
+                while (true) {
+                    String newIoStatus = ioDeviceHandler.getIoStatus();
+                    if (newIoStatus.split(",")[1].equals(SignalLevel.LOW.getValue())) {
+                        this.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+                        break;
+                    }
+                    try {
+                        Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS); // 每100毫秒检查一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                log.info("碗已经升到位，无需进行升碗操作！");
+            }
             return;
         }
 
@@ -99,6 +172,7 @@ public class StepperMotor {
         // 如果传感器2为低电平，说明碗还未升到位
         log.error("碗未升到位，请检查传感器2状态！");
     }
+
 
 
     /**

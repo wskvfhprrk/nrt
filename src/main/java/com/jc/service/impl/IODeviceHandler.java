@@ -22,7 +22,7 @@ public class IODeviceHandler implements DeviceHandler {
     private String ioStatus;
 
     public IODeviceHandler() {
-        this.ioStatus = SignalLevel.LOW.getValue();
+        this.ioStatus = StepperMotorConstants.NOT_INITIALIZED;
     }
 
     public String getIoStatus() {

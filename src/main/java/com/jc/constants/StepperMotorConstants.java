@@ -29,4 +29,6 @@ public class StepperMotorConstants {
     public static final String ERROR_TOO_MANY_BOWLS = "碗放多了，请拿出一部分！";
     /** 错误信息：速度超过最大速度 */
     public static final String ERROR_SPEED_TOO_HIGH = "设置速度超过最大速度500了";
+    /** 传感器无值状态为2 */
+    public static final String NOT_INITIALIZED = "2";
 }
