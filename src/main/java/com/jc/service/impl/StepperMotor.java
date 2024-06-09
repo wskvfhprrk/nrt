@@ -17,6 +17,12 @@ public class StepperMotor {
     private NettyServerHandler nettyServerHandler;
     @Value("${lanTo485}")
     private String lanTo485;
+    private IODeviceHandler ioDeviceHandler;
+
+    @Autowired
+    public StepperMotor(IODeviceHandler ioDeviceHandler){
+        this.ioDeviceHandler=ioDeviceHandler;
+    }
 
     /**
      * 启动步进电机
@@ -25,10 +31,20 @@ public class StepperMotor {
      * @param positiveOrNegative   步进电机转动方向，true表示正转，false表示反转
      * @param numberOfPulses   脉冲数量
      */
-    public void startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses){
+    public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses){
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
-            return; // 添加return，防止继续执行
+            return "编号"+no+"步进电机不存在"; // 添加return，防止继续执行
+        }
+        //如果继电器3为高电平，严禁电机2向下运行true,如果4为高电平严禁电机3向上运行false
+        String[] split = ioDeviceHandler.getIoStatus().split(",");
+        if(split[2].equals("1") && no==2 && positiveOrNegative){
+            log.error("碗已经到最低位，不能再向下走了！");
+            return "碗已经到最低位，不能再向下走了！";
+        }
+        if(split[3].equals("1") && no==2 && !positiveOrNegative){
+            log.error("碗已经到最高位，不能再向上走了！");
+            return "碗已经到最高位，不能再向上走了！";
         }
         // 先发脉冲
         // 将编号转换为16进制字符串
@@ -66,6 +82,7 @@ public class StepperMotor {
         stringBuffer.append(crc);
         log.info("步进电机转动指令：{}",stringBuffer);
         nettyServerHandler.sendMessageToClient(lanTo485, stringBuffer.toString(), true);
+        return "ok";
     }
 
     /**
@@ -75,6 +92,7 @@ public class StepperMotor {
      * @param speed  步进电机速度
      */
     public String modificationSpeed(int no, int speed){
+
         if (no <= 0 || no > 3) {
             log.error("编号{}步进电机不存在！", no);
             return "步进电机编号不存在"; // 添加return，防止继续执行

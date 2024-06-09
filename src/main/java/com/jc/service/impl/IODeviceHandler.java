@@ -2,6 +2,9 @@ package com.jc.service.impl;
 
 import com.jc.service.DeviceHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -11,12 +14,25 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class IODeviceHandler implements DeviceHandler {
+    @Lazy
+    @Autowired
+    private StepperMotor stepperMotor;
+
+    private String ioStatus;
+
+    public IODeviceHandler(){
+        this.ioStatus="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
+    }
+
+    public String getIoStatus() {
+        return ioStatus;
+    }
 
     /**
      * 处理消息
      *
      * @param message 消息内容
-     * @param isHex 是否为16进制消息
+     * @param isHex   是否为16进制消息
      */
     @Override
     public void handle(String message, boolean isHex) {
@@ -33,8 +49,20 @@ public class IODeviceHandler implements DeviceHandler {
                 }
             }
             log.info("传感器的高低电平：{}", sb);
+            //ioStatus赋值，以便其它类看到
+            this.ioStatus= sb.toString();
+            sensorInstructionProcessing(sb);
         } else {
             log.info("普通消息: {}", message);
+        }
+    }
+
+    private void sensorInstructionProcessing(StringBuffer sb) {
+        String[] split = sb.toString().split(",");
+        //如果第三个传感器高电平，要停止碗步进电机
+        if (split[2].equals("1") || split[3].equals("1")) {
+            log.info("到达限位点，停止碗升降的步时电机");
+            stepperMotor.stop(2);
         }
     }
 
@@ -42,9 +70,9 @@ public class IODeviceHandler implements DeviceHandler {
      * 解析引脚的高低电平
      *
      * @param startIo 启始引脚
-     * @param endIo 结束引脚
-     * @param hexStr 16进制字符串
-     * @param sb 保存解析结果的StringBuffer
+     * @param endIo   结束引脚
+     * @param hexStr  16进制字符串
+     * @param sb      保存解析结果的StringBuffer
      * @return 解析后的StringBuffer
      */
     private StringBuffer heightOrLow(int startIo, int endIo, String hexStr, StringBuffer sb) {
@@ -58,40 +86,40 @@ public class IODeviceHandler implements DeviceHandler {
         char firstChar = hexStr.charAt(0);
         char secondChar = hexStr.charAt(1);
 
-        // 根据第二位字符判断 startIo 是否为高电平
+//        // 根据第二位字符判断 startIo 是否为高电平
         if (secondChar == '1' || secondChar == '5') {
             sb.append("1,");
-            log.info("引脚 {} 为高电平", startIo);
+//            log.info("引脚 {} 为高电平", startIo);
         } else {
             sb.append("0,");
-            log.info("引脚 {} 为低电平", startIo);
+//            log.info("引脚 {} 为低电平", startIo);
         }
 
-        // 根据第二位字符判断 startIo + 1 是否为高电平
+//        // 根据第二位字符判断 startIo + 1 是否为高电平
         if (secondChar == '4' || secondChar == '5') {
             sb.append("1,");
-            log.info("引脚 {} 为高电平", startIo + 1);
+//            log.info("引脚 {} 为高电平", startIo + 1);
         } else {
             sb.append("0,");
-            log.info("引脚 {} 为低电平", startIo + 1);
+//            log.info("引脚 {} 为低电平", startIo + 1);
         }
 
-        // 根据第一位字符判断 startIo + 2 是否为高电平
+//        // 根据第一位字符判断 startIo + 2 是否为高电平
         if (firstChar == '1' || firstChar == '5') {
             sb.append("1,");
-            log.info("引脚 {} 为高电平", startIo + 2);
+//            log.info("引脚 {} 为高电平", startIo + 2);
         } else {
             sb.append("0,");
-            log.info("引脚 {} 为低电平", startIo + 2);
+//            log.info("引脚 {} 为低电平", startIo + 2);
         }
 
-        // 根据第一位字符判断 endIo 是否为高电平
+//        // 根据第一位字符判断 endIo 是否为高电平
         if (firstChar == '4' || firstChar == '5') {
             sb.append("1,");
-            log.info("引脚 {} 为高电平", endIo);
+//            log.info("引脚 {} 为高电平", endIo);
         } else {
             sb.append("0,");
-            log.info("引脚 {} 为低电平", endIo);
+//            log.info("引脚 {} 为低电平", endIo);
         }
         return sb;
     }

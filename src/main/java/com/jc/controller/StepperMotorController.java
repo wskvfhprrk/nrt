@@ -26,8 +26,7 @@ public class StepperMotorController {
      */
     @GetMapping("startStepperMotor")
     public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses){
-        stepperMotor.startStepperMotor(no,positiveOrNegative,numberOfPulses);
-        return "ok";
+        return stepperMotor.startStepperMotor(no,positiveOrNegative,numberOfPulses);
     }
 
     /**
