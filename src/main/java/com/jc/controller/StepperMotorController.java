@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StepperMotorController {
 
     @Autowired
-    private StepperMotorService stepperMotor;
+    private StepperMotorService stepperMotorService;
 
     /**
      * 启动步进电机
@@ -26,7 +26,7 @@ public class StepperMotorController {
      */
     @GetMapping("startStepperMotor")
     public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses) {
-        return stepperMotor.startStepperMotor(no, positiveOrNegative, numberOfPulses);
+        return stepperMotorService.startStepperMotor(no, positiveOrNegative, numberOfPulses);
     }
 
     /**
@@ -38,7 +38,7 @@ public class StepperMotorController {
      */
     @GetMapping("modificationSpeed")
     public String modificationSpeed(int no, int speed) {
-        return stepperMotor.modificationSpeed(no, speed);
+        return stepperMotorService.modificationSpeed(no, speed);
     }
 
     /**
@@ -49,31 +49,7 @@ public class StepperMotorController {
      */
     @GetMapping("stop")
     public String stop(int no) {
-        stepperMotor.stop(no);
-        return "ok";
-    }
-
-    @GetMapping("bowlRising")
-    public String bowlRising() {
-        return stepperMotor.bowlRising();
-    }
-
-    @GetMapping("continuousBowlCheck")
-    public String continuousBowlCheck() {
-        stepperMotor.continuousBowlCheck();
-        return "ok";
-    }
-
-    @GetMapping("bowlDescent")
-    public String bowlDescent() {
-        return stepperMotor.bowlDescent();
-    }
-
-    @GetMapping("bowlReset")
-    public String bowlReset() {
-        new Thread(() -> {
-            stepperMotor.bowlReset();
-        }).start();
+        stepperMotorService.stop(no);
         return "ok";
     }
 }

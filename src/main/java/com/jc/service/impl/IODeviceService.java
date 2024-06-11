@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public class IODeviceService implements DeviceHandler {
     @Lazy
     @Autowired
-    private StepperMotorService stepperMotor;
+    private StepperMotorService stepperMotorService;
 
     private String ioStatus;
 
@@ -68,7 +68,7 @@ public class IODeviceService implements DeviceHandler {
         // 如果碗的极限传感器高电平，要停止碗步进电机
         if (split[2].equals(SignalLevel.HIGH.getValue()) || split[3].equals(SignalLevel.HIGH.getValue())) {
             log.info("到达限位点，停止碗升降的步进电机");
-            stepperMotor.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+            stepperMotorService.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
         }
     }
 
