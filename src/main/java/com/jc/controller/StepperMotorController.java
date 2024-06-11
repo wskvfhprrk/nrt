@@ -57,23 +57,23 @@ public class StepperMotorController {
     public String bowlRising() {
         return stepperMotor.bowlRising();
     }
-//
-//    @GetMapping("check")
-//    public String check() {
-//        stepperMotor.check(false);
-//        return "ok";
-//    }
+
+    @GetMapping("check")
+    public String check() {
+        stepperMotor.check(false);
+        return "ok";
+    }
 
     @GetMapping("bowlDescent")
     public String bowlDescent() {
         return stepperMotor.bowlDescent();
     }
 
-//    @GetMapping("bowlReset")
-//    public String bowlReset() {
-//        new Thread(() -> {
-//            stepperMotor.bowlReset();
-//        }).start();
-//        return "ok";
-//    }
+    @GetMapping("bowlReset")
+    public String bowlReset() {
+        new Thread(() -> {
+            stepperMotor.bowlReset();
+        }).start();
+        return "ok";
+    }
 }

@@ -1,6 +1,7 @@
 package com.jc.service.impl;
 
 import com.jc.constants.StepperMotorConstants;
+import com.jc.enums.SignalLevel;
 import com.jc.netty.server.NettyServerHandler;
 import com.jc.utils.CRC16;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,8 @@ public class StepperMotorService {
     private final NettyServerHandler nettyServerHandler;
     private final IODeviceService ioDeviceService;
     private final String lanTo485;
+    @Value("${IoIp}")
+    private String ioIp;
 
     @Autowired
     public StepperMotorService(NettyServerHandler nettyServerHandler,
@@ -27,6 +30,145 @@ public class StepperMotorService {
         this.nettyServerHandler = nettyServerHandler;
         this.ioDeviceService = ioDeviceService;
         this.lanTo485 = lanTo485;
+    }
+
+    /**
+     * 执行初始化检测或连续出碗检查的方法。
+     *
+     * @param isInitialization 如果为 true，执行初始化检测；如果为 false，执行连续出碗检查。
+     */
+    public void check(boolean isInitialization) {
+        if (isInitialization) {
+            // 初始化检测
+            bowlReset();
+        } else {
+            // 连续出碗检查
+            continuousBowlCheck();
+        }
+    }
+
+    /**
+     * 连续出碗检查方法，用于检测碗是否已经升到位，并在需要时进行降碗操作直到碗低出传感器为止。
+     */
+    private void continuousBowlCheck() {
+        // 获取传感器状态
+        String ioStatus = ioDeviceService.getIoStatus();
+        if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+            log.error("无法获取传感器的值！");
+            return;
+        }
+        // 解析传感器状态字符串
+        String[] split = ioStatus.split(",");
+        boolean bowlSensor = split[1].equals(SignalLevel.HIGH.getValue()); // 碗传感器状态
+
+        // 如果传感器2为高电平，说明碗已经升到位
+        if (bowlSensor) {
+            // 如果同时轨道最低极限点为低电平，降碗直到碗低出传感器为止
+            if (!split[2].equals(SignalLevel.HIGH.getValue())) {
+                this.bowlDescent();
+                // 循环等待传感器2变为低电平
+                while (true) {
+                    String newIoStatus = ioDeviceService.getIoStatus();
+                    if (newIoStatus.split(",")[1].equals(SignalLevel.LOW.getValue())) {
+                        this.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+                        break;
+                    }
+                    try {
+                        Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS); // 每100毫秒检查一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                log.info("碗已经升到位，无需进行升碗操作！");
+            }
+            return;
+        }
+        // 如果传感器2为低电平，说明碗还未升到位
+        log.error("碗未升到位，请检查传感器2状态！");
+    }
+
+    /**
+     * 重置碗
+     */
+    public void bowlReset() {
+        // 获取传感器状态
+        String ioStatus = ioDeviceService.getIoStatus();
+        if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+            log.error("无法获取传感器的值！");
+            // 先重置传感器
+            nettyServerHandler.sendMessageToClient(ioIp, StepperMotorConstants.RESET_COMMAND, true);
+            try {
+                // 等待指定时间，确保传感器完成重置
+                Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            // 重新获取传感器状态
+            ioStatus = ioDeviceService.getIoStatus();
+        }
+
+        // 解析传感器状态字符串
+        String[] split = ioStatus.split(",");
+        boolean bowlSensor = split[1].equals(SignalLevel.HIGH.getValue()); // 碗传感器状态
+        boolean lowerLimit = split[2].equals(SignalLevel.HIGH.getValue()); // 轨道最低极限点状态
+        boolean upperLimit = split[3].equals(SignalLevel.HIGH.getValue()); // 轨道最高极限点状态
+
+        // 如果传感器2为高电平，说明碗已经升到位
+        if (bowlSensor) {
+            // 如果同时轨道最低极限点为低电平，降碗直到碗低出传感器为止
+            if (!lowerLimit) {
+                this.bowlDescent();
+                // 循环等待传感器2变为低电平
+                while (true) {
+                    String newIoStatus = ioDeviceService.getIoStatus();
+                    if (newIoStatus.split(",")[1].equals(SignalLevel.LOW.getValue())) {
+                        this.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+                        break;
+                    }
+                    try {
+                        Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS); // 每100毫秒检查一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                log.info("碗已经升到位，无需进行升碗操作！");
+            }
+            return;
+        }
+
+        // 如果2、4传感器都为低电平，直接升碗
+        if (!bowlSensor && !upperLimit) {
+            this.bowlRising();
+            // 等待传感器2变为高电平，最多等待30秒
+            int count = 0;
+            while (!bowlSensor) {
+                try {
+                    Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                    count++;
+                    log.info("count:{}", count);
+                    if (count > 300) { // 30秒超时
+                        this.stop(2);
+                        log.error("碗升到位超时！");
+                        return;
+                    }
+                    ioStatus = ioDeviceService.getIoStatus();
+                    split = ioStatus.split(",");
+                    bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
+                    if (bowlSensor) {
+                        this.stop(2);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            log.info("碗已经升到位！");
+            return;
+        }
+
+        // 如果传感器2为低电平，说明碗还未升到位
+        log.error("碗未升到位，请检查传感器2状态！");
     }
 
     public String bowlRising() {
@@ -63,8 +205,8 @@ public class StepperMotorService {
     }
 
     private boolean isMotorBlocked(String[] ioStatus, int motorNumber, boolean positiveOrNegative) {
-        return (ioStatus[2].equals("1") && motorNumber == 2 && positiveOrNegative) ||
-               (ioStatus[3].equals("1") && motorNumber == 2 && !positiveOrNegative);
+        return (ioStatus[2].equals(SignalLevel.HIGH) && motorNumber == 2 && positiveOrNegative) ||
+                (ioStatus[3].equals(SignalLevel.HIGH) && motorNumber == 2 && !positiveOrNegative);
     }
 
     private String getBlockErrorMessage(int motorNumber, boolean positiveOrNegative) {
