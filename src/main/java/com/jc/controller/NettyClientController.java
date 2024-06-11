@@ -12,7 +12,6 @@ public class NettyClientController {
 
     @GetMapping("takeABowl")
     public String takeABowl(){
-        //zhongwan jspf
         try {
             nettyClientConfig.connectAndSendData("run(takeABowl.jspf)");
         } catch (InterruptedException e) {
