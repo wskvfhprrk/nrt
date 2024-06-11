@@ -147,6 +147,7 @@ public class NettyServerHandler extends ChannelInboundHandlerAdapter {
             String address = entry.getKey();
             if (address.equals(clientIp)) {
                 Channel channel = entry.getValue();
+                log.info("服务器发送指令：{}",message);
                 if (hex) {
                     ByteBuf buff = Unpooled.buffer();
                     buff.writeBytes(HexConvert.hexStringToBytes(message.replaceAll(" ", "")));

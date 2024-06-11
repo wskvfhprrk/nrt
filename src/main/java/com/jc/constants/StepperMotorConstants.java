@@ -30,5 +30,5 @@ public class StepperMotorConstants {
     /** 错误信息：速度超过最大速度 */
     public static final String ERROR_SPEED_TOO_HIGH = "设置速度超过最大速度500了";
     /** 传感器无值状态为2 */
-    public static final String NOT_INITIALIZED = "2";
+    public static final String NOT_INITIALIZED = "0,0,0,0,0,0,0,0,0,0,0,0,0,";
 }

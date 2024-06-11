@@ -19,50 +19,61 @@ public class StepperMotorController {
     /**
      * 启动步进电机
      *
-     * @param no               步进电机编号
-     * @param positiveOrNegative   步进电机转动方向，true表示正转，false表示反转
-     * @param numberOfPulses   脉冲数量
+     * @param no                 步进电机编号
+     * @param positiveOrNegative 步进电机转动方向，true表示正转，false表示反转
+     * @param numberOfPulses     脉冲数量
      * @return 返回操作结果
      */
     @GetMapping("startStepperMotor")
-    public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses){
-        return stepperMotor.startStepperMotor(no,positiveOrNegative,numberOfPulses);
+    public String startStepperMotor(int no, Boolean positiveOrNegative, int numberOfPulses) {
+        return stepperMotor.startStepperMotor(no, positiveOrNegative, numberOfPulses);
     }
 
     /**
      * 修改步进电机速度
      *
-     * @param no     步进电机编号
-     * @param speed  步进电机速度
+     * @param no    步进电机编号
+     * @param speed 步进电机速度
      * @return 返回操作结果
      */
     @GetMapping("modificationSpeed")
-    public String modificationSpeed(int no, int speed){
-        return stepperMotor.modificationSpeed(no,speed);
+    public String modificationSpeed(int no, int speed) {
+        return stepperMotor.modificationSpeed(no, speed);
     }
 
     /**
      * 停止步进电机
      *
-     * @param no   步进电机编号
+     * @param no 步进电机编号
      * @return 返回操作结果
      */
     @GetMapping("stop")
-    public String stop(int no){
+    public String stop(int no) {
         stepperMotor.stop(no);
         return "ok";
     }
+
     @GetMapping("bowlRising")
-    public String bowlRising(){
-       return stepperMotor.bowlRising();
+    public String bowlRising() {
+        return stepperMotor.bowlRising();
     }
+//
+//    @GetMapping("check")
+//    public String check() {
+//        stepperMotor.check(false);
+//        return "ok";
+//    }
+
     @GetMapping("bowlDescent")
-    public String bowlDescent(){
+    public String bowlDescent() {
         return stepperMotor.bowlDescent();
     }
-    @GetMapping("reset")
-    public String reset(){
-        stepperMotor.bowlReset();
-        return "ok";
-    }
+
+//    @GetMapping("bowlReset")
+//    public String bowlReset() {
+//        new Thread(() -> {
+//            stepperMotor.bowlReset();
+//        }).start();
+//        return "ok";
+//    }
 }
