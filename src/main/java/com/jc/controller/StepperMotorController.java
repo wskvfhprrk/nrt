@@ -58,9 +58,9 @@ public class StepperMotorController {
         return stepperMotor.bowlRising();
     }
 
-    @GetMapping("check")
-    public String check() {
-        stepperMotor.check(false);
+    @GetMapping("continuousBowlCheck")
+    public String continuousBowlCheck() {
+        stepperMotor.continuousBowlCheck();
         return "ok";
     }
 
