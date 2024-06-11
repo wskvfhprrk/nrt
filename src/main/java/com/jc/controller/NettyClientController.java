@@ -10,11 +10,11 @@ public class NettyClientController {
     @Autowired
     NettyClientConfig nettyClientConfig;
 
-    @GetMapping("sendMessage")
-    public String sendMessage(){
+    @GetMapping("takeABowl")
+    public String takeABowl(){
         //zhongwan jspf
         try {
-            nettyClientConfig.connectAndSendData("run(zhongwan.jspf)");
+            nettyClientConfig.connectAndSendData("run(takeABowl.jspf)");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
