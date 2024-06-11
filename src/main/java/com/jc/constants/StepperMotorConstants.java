@@ -4,7 +4,7 @@ public class StepperMotorConstants {
     /** 重置命令 */
     public static final String RESET_COMMAND = "48 3A 01 52 00 00 00 00 00 00 00 00 D5 45 44";
     /** 睡眠时间（毫秒） */
-    public static final long SLEEP_TIME_MS = 1000L;
+    public static final long SLEEP_TIME_MS = 100L;
     /** 最大步进电机编号 */
     public static final int MAX_MOTOR_NO = 4;
     /** 最大速度 */
