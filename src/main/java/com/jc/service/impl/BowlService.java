@@ -17,7 +17,6 @@ public class BowlService {
 
     private final StepperMotorService stepperMotorService;
     private final IODeviceService ioDeviceService;
-    private final String lanTo485;
 
     @Value("${IoIp}")
     private String ioIp;
@@ -30,7 +29,6 @@ public class BowlService {
                        @Value("${lanTo485}") String lanTo485) {
         this.stepperMotorService = stepperMotorService;
         this.ioDeviceService = ioDeviceService;
-        this.lanTo485 = lanTo485;
     }
 
     /**
