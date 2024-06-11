@@ -3,7 +3,7 @@
  */
 package com.jc.controller;
 
-import com.jc.service.impl.StepperMotor;
+import com.jc.service.impl.StepperMotorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class StepperMotorController {
 
     @Autowired
-    private StepperMotor stepperMotor;
+    private StepperMotorService stepperMotor;
 
     /**
      * 启动步进电机

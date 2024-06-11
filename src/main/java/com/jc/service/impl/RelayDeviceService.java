@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class RelayDeviceHandler implements DeviceHandler {
+public class RelayDeviceService implements DeviceHandler {
 
     @Autowired
     private NettyServerHandler nettyServerHandler;

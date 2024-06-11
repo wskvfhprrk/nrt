@@ -1,6 +1,6 @@
 package com.jc.controller;
 
-import com.jc.service.impl.RelayDeviceHandler;
+import com.jc.service.impl.RelayDeviceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class RelayController {
 
     @Autowired
-    private RelayDeviceHandler relayDeviceHandler;
+    private RelayDeviceService relayDeviceService;
 
     /**
      * 关闭所有继电器
      */
     @GetMapping("closeAll")
     public void closeAll() {
-        relayDeviceHandler.closeAll();
+        relayDeviceService.closeAll();
     }
 
     /**
@@ -30,7 +30,7 @@ public class RelayController {
      */
     @GetMapping("open")
     public void open(@RequestParam int i) {
-        relayDeviceHandler.relayOpening(i);
+        relayDeviceService.relayOpening(i);
     }
 
     /**
@@ -40,7 +40,7 @@ public class RelayController {
      */
     @GetMapping("close")
     public void close(@RequestParam int i) {
-        relayDeviceHandler.relayClosing(i);
+        relayDeviceService.relayClosing(i);
     }
 
     /**
@@ -48,7 +48,7 @@ public class RelayController {
      */
     @GetMapping("openAll")
     public void openAll() {
-        relayDeviceHandler.openAll();
+        relayDeviceService.openAll();
     }
 
     /**
@@ -59,6 +59,6 @@ public class RelayController {
      */
     @GetMapping("openClose")
     public void openClose(@RequestParam int no, @RequestParam int second) {
-        relayDeviceHandler.openClose(no, second);
+        relayDeviceService.openClose(no, second);
     }
 }

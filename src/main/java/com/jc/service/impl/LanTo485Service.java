@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
-public class LanTo485Handler implements DeviceHandler {
+public class LanTo485Service implements DeviceHandler {
     /**
      * 处理消息
      *

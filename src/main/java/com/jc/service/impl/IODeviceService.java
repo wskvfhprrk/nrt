@@ -14,14 +14,14 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @Slf4j
-public class IODeviceHandler implements DeviceHandler {
+public class IODeviceService implements DeviceHandler {
     @Lazy
     @Autowired
-    private StepperMotor stepperMotor;
+    private StepperMotorService stepperMotor;
 
     private String ioStatus;
 
-    public IODeviceHandler() {
+    public IODeviceService() {
         this.ioStatus = StepperMotorConstants.NOT_INITIALIZED;
     }
 
