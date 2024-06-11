@@ -2,6 +2,7 @@ package com.jc;
 
 import io.netty.channel.ChannelFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -16,11 +17,14 @@ import java.io.IOException;
 @Slf4j
 public class Application {
 
+    @Autowired
+    private ApplicationContext ctx;
+
+
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
-    //启动首页点单页面
 //    @PostConstruct
     public void openBrowser() {
         try {
@@ -33,29 +37,30 @@ public class Application {
     }
 
     @Bean
-    public CommandLineRunner run(ApplicationContext ctx) {
-        //启动客户端
-//        try {
-//            nettyClient.run();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-        //启动netty服务器
+    public CommandLineRunner run() {
         return args -> {
-            ChannelFuture future = ctx.getBean(ChannelFuture.class);
-            if (future != null) {
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    try {
-                        future.channel().close();
-                        future.channel().eventLoop().shutdownGracefully();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }));
-                future.channel().closeFuture().sync();
+            // 启动Netty服务器
+            ChannelFuture serverFuture = ctx.getBean("serverBootstrap", ChannelFuture.class);
+            if (serverFuture != null) {
+                serverFuture.sync();
+                log.info("Netty服务器启动成功。");
             } else {
-               log.error("Failed to start Netty server.");
+                log.error("Netty服务器启动失败。");
             }
+
+
+            // 添加关闭钩子
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    serverFuture.channel().close();
+                    serverFuture.channel().eventLoop().shutdownGracefully();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+
+            // 阻塞直到服务器通道关闭
+            serverFuture.channel().closeFuture().sync();
         };
     }
 }
