@@ -1,5 +1,6 @@
 package com.jc.netty.server;
 
+import com.jc.service.impl.DocuService;
 import com.jc.service.impl.IODeviceService;
 import com.jc.service.impl.LanTo485Service;
 import com.jc.service.impl.RelayDeviceService;
@@ -30,6 +31,10 @@ public class FicationProcessing {
     private String lanTo485; // 485设备IP地址（暂未使用）
     @Autowired
     private LanTo485Service lanTo485Service;
+    @Value("${ducoIp}")
+    private String ducoIp;
+    @Autowired
+    private DocuService docuService;
 
     /**
      * 分类处理方法
@@ -44,11 +49,11 @@ public class FicationProcessing {
             // 如果客户端IP地址匹配IO设备IP地址，则交由IO设备处理器处理消息
             ioDeviceService.handle(message, flag);
         } else if (clientIp.equals(relayIp)) {
-            // 如果客户端IP地址匹配继电器设备IP地址，则交由继电器设备处理器处理消息
             relayDeviceService.handle(message, flag);
         } else if (clientIp.equals(lanTo485)) {
-            // 如果客户端IP地址匹配继电器设备IP地址，则交由继电器设备处理器处理消息
             lanTo485Service.handle(message, flag);
+        } else if (clientIp.equals(ducoIp)) {
+            docuService.handle(message, flag);
         } else {
             // 其他情况视为未知设备IP地址，记录错误日志
             log.error("未知的设备IP地址：{}", clientIp);
