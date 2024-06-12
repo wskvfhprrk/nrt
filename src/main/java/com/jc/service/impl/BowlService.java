@@ -69,10 +69,10 @@ public class BowlService {
                 try {
                     Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
                     count++;
-                    if (count > 300) { // 30秒超时
-                        log.error("碗升到位超时！");
-                        return;
-                    }
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
                     ioStatus = ioDeviceService.getIoStatus();
                     split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
@@ -95,10 +95,10 @@ public class BowlService {
                 try {
                     Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
                     count++;
-                    if (count > 300) { // 30秒超时
-                        log.error("碗升到位超时！");
-                        return;
-                    }
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
                     ioStatus = ioDeviceService.getIoStatus();
                     split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
@@ -158,10 +158,10 @@ public class BowlService {
                 try {
                     Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
                     count++;
-                    if (count > 300) { // 30秒超时
-                        log.error("碗升到位超时！");
-                        return;
-                    }
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
                     ioStatus = ioDeviceService.getIoStatus();
                     split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
