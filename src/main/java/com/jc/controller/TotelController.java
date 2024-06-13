@@ -41,6 +41,7 @@ public class TotelController {
 
     @GetMapping("takeBowl")
     public String takeBowl() {
+        // TODO: 2024/6/12 判断是否回原点、碗的状态、 
         //升碗
         new Thread(() -> {
             bowlService.continuousBowlCheck();

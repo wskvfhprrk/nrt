@@ -133,4 +133,19 @@ public class RelayDeviceService implements DeviceHandler {
         // 发送打开所有继电器的指令
         nettyServerHandler.sendMessageToClient(relayIp, "48 3A 01 57 55 55 55 55 55 55 55 55 82 45 44", true);
     }
+
+    /**
+     * 出汤
+     * @return
+     */
+    public String dispenseSoup(){
+        openClose(1,20);
+        try {
+            Thread.sleep(50L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        openClose(2,20);
+        return "ok";
+    }
 }

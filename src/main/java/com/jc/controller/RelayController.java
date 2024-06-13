@@ -50,6 +50,10 @@ public class RelayController {
     public void openAll() {
         relayDeviceService.openAll();
     }
+    @GetMapping("dispenseSoup")
+    public void dispenseSoup() {
+        relayDeviceService.dispenseSoup();
+    }
 
     /**
      * 打开指定编号的继电器一段时间后自动关闭
