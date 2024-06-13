@@ -31,7 +31,7 @@ public class TotelController {
             }
         }).run();
         //转盘重置
-        turntableService.feeding();
+        turntableService.turntableReset();
         log.info("转盘重置");
         //碗重置
         bowlService.bowlReset();
