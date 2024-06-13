@@ -1,6 +1,6 @@
 package com.jc.service.impl;
 
-import com.jc.constants.StepperMotorConstants;
+import com.jc.constants.Constants;
 import com.jc.netty.server.NettyServerHandler;
 import com.jc.utils.CRC16;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +34,7 @@ public class StepperMotorService {
      * @return 操作结果
      */
     public String startStepperMotor(int motorNumber, boolean positiveOrNegative, int numberOfPulses) {
-        if (motorNumber <= 0 || motorNumber > StepperMotorConstants.MAX_MOTOR_NO) {
+        if (motorNumber <= 0 || motorNumber > Constants.MAX_MOTOR_NO) {
             log.error("编号{}步进电机不存在！", motorNumber);
             return "编号" + motorNumber + "步进电机不存在";
         }
@@ -50,7 +50,7 @@ public class StepperMotorService {
      * @param motorNumber 步进电机编号
      */
     public void stop(int motorNumber) {
-        if (motorNumber <= 0 || motorNumber > StepperMotorConstants.MAX_MOTOR_NO) {
+        if (motorNumber <= 0 || motorNumber > Constants.MAX_MOTOR_NO) {
             log.error("编号{}步进电机不存在！", motorNumber);
             return;
         }
@@ -68,11 +68,11 @@ public class StepperMotorService {
      * @return 操作结果
      */
     public String modificationSpeed(int motorNumber, int speed) {
-        if (motorNumber <= 0 || motorNumber > StepperMotorConstants.MAX_MOTOR_NO) {
+        if (motorNumber <= 0 || motorNumber > Constants.MAX_MOTOR_NO) {
             log.error("编号{}步进电机不存在！", motorNumber);
             return "步进电机编号不存在";
         }
-        if (speed >= StepperMotorConstants.MAX_SPEED) {
+        if (speed >= Constants.MAX_SPEED) {
             log.error("设置速度：{}超过最大速度500了", speed);
             return "设置速度超过最大速度500了";
         }
