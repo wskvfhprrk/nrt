@@ -14,11 +14,12 @@ public class TurntableController {
     private TurntableService turntableService;
 
     @GetMapping("reset")
-    public String reset(){
-       return turntableService.turntableReset();
+    public String reset() {
+        return turntableService.turntableReset();
     }
+
     @GetMapping("feeding")
-    public String feeding(){
-       return turntableService.feeding();
+    public String feeding() {
+        return turntableService.feeding();
     }
 }

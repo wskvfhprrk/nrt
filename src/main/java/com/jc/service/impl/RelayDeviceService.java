@@ -5,6 +5,7 @@ import com.jc.service.DeviceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,6 +18,8 @@ public class RelayDeviceService implements DeviceHandler {
 
     @Autowired
     private NettyServerHandler nettyServerHandler;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @Value("${relayIp}")
     private String relayIp;

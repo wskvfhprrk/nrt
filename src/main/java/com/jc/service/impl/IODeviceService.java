@@ -1,11 +1,12 @@
 package com.jc.service.impl;
 
-import com.jc.constants.StepperMotorConstants;
+import com.jc.constants.Constants;
 import com.jc.enums.SignalLevel;
 import com.jc.service.DeviceHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -19,10 +20,13 @@ public class IODeviceService implements DeviceHandler {
     @Autowired
     private StepperMotorService stepperMotorService;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     private String ioStatus;
 
     public IODeviceService() {
-        this.ioStatus = StepperMotorConstants.NOT_INITIALIZED;
+        this.ioStatus = Constants.NOT_INITIALIZED;
     }
 
     public String getIoStatus() {
@@ -52,6 +56,7 @@ public class IODeviceService implements DeviceHandler {
             log.info("传感器的高低电平：{}", sb);
             // ioStatus赋值，以便其它类看到
             this.ioStatus = sb.toString();
+            redisTemplate.opsForValue().set(Constants.IO_KEY,sb.toString());
             sensorInstructionProcessing(sb);
         } else {
             log.info("普通消息: {}", message);
@@ -68,7 +73,7 @@ public class IODeviceService implements DeviceHandler {
         // 如果碗的极限传感器高电平，要停止碗步进电机
         if (split[2].equals(SignalLevel.HIGH.getValue()) || split[3].equals(SignalLevel.HIGH.getValue())) {
             log.info("到达限位点，停止碗升降的步进电机");
-            stepperMotorService.stop(StepperMotorConstants.BOWL_CONTROLLER_NO);
+            stepperMotorService.stop(Constants.BOWL_CONTROLLER_NO);
         }
     }
 
