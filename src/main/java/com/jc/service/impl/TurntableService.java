@@ -1,6 +1,6 @@
 package com.jc.service.impl;
 
-import com.jc.constants.StepperMotorConstants;
+import com.jc.constants.Constants;
 import com.jc.enums.SignalLevel;
 import com.jc.netty.server.NettyServerHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -39,19 +39,19 @@ public class TurntableService {
     public String turntableReset() {
         // 获取传感器状态
         String ioStatus = ioDeviceService.getIoStatus();
-        while (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+        while (ioStatus.equals(Constants.NOT_INITIALIZED)) {
             log.error("无法获取传感器的值！");
             // 先重置传感器
-            nettyServerHandler.sendMessageToClient(ioIp, StepperMotorConstants.RESET_COMMAND, true);
+            nettyServerHandler.sendMessageToClient(ioIp, Constants.RESET_COMMAND, true);
             try {
                 // 等待指定时间，确保传感器完成重置
-                Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                Thread.sleep(Constants.SLEEP_TIME_MS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             // 重新获取传感器状态
             ioStatus = ioDeviceService.getIoStatus();
-            if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+            if (ioStatus.equals(Constants.NOT_INITIALIZED)) {
                 log.error("没有发现传感器的值！");
             }
         }
@@ -70,7 +70,7 @@ public class TurntableService {
                     flag = false;
                 }
                 try {
-                    Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                    Thread.sleep(Constants.SLEEP_TIME_MS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -82,18 +82,18 @@ public class TurntableService {
     public String feeding() {
         //先复位
         String ioStatus = ioDeviceService.getIoStatus();
-        while (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+        while (ioStatus.equals(Constants.NOT_INITIALIZED)) {
             // 先重置传感器
-            nettyServerHandler.sendMessageToClient(ioIp, StepperMotorConstants.RESET_COMMAND, true);
+            nettyServerHandler.sendMessageToClient(ioIp, Constants.RESET_COMMAND, true);
             try {
                 // 等待指定时间，确保传感器完成重置
-                Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                Thread.sleep(Constants.SLEEP_TIME_MS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             // 重新获取传感器状态
             ioStatus = ioDeviceService.getIoStatus();
-            if (ioStatus.equals(StepperMotorConstants.NOT_INITIALIZED)) {
+            if (ioStatus.equals(Constants.NOT_INITIALIZED)) {
                 log.error("没有发现传感器的值！");
             }
         }
@@ -113,7 +113,7 @@ public class TurntableService {
                     flag = false;
                 }
                 try {
-                    Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                    Thread.sleep(Constants.SLEEP_TIME_MS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -183,7 +183,7 @@ public class TurntableService {
                 }
             }
             try {
-                Thread.sleep(StepperMotorConstants.SLEEP_TIME_MS);
+                Thread.sleep(Constants.SLEEP_TIME_MS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

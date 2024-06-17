@@ -6,7 +6,6 @@ import com.jc.netty.server.NettyServerHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 /**
@@ -17,18 +16,19 @@ import org.springframework.stereotype.Service;
 public class BowlService {
 
     private final StepperMotorService stepperMotorService;
+    private final IODeviceService ioDeviceService;
 
     @Value("${IoIp}")
     private String ioIp;
     @Autowired
     private NettyServerHandler nettyServerHandler;
-    @Autowired
-    private RedisTemplate redisTemplate;
 
     @Autowired
     public BowlService(StepperMotorService stepperMotorService,
+                       IODeviceService ioDeviceService,
                        @Value("${lanTo485}") String lanTo485) {
         this.stepperMotorService = stepperMotorService;
+        this.ioDeviceService = ioDeviceService;
     }
 
     /**
@@ -36,8 +36,8 @@ public class BowlService {
      */
     public void bowlReset() {
         // 获取传感器状态
-        Object o = redisTemplate.opsForValue().get(Constants.IO_KEY);
-        while (o == null) {
+        String ioStatus = ioDeviceService.getIoStatus();
+        while (ioStatus.equals(Constants.NOT_INITIALIZED)) {
             log.error("无法获取传感器的值！");
             // 先重置传感器
             nettyServerHandler.sendMessageToClient(ioIp, Constants.RESET_COMMAND, true);
@@ -47,11 +47,14 @@ public class BowlService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            o = redisTemplate.opsForValue().get(Constants.IO_KEY);
+            // 重新获取传感器状态
+            ioStatus = ioDeviceService.getIoStatus();
+            if (ioStatus.equals(Constants.NOT_INITIALIZED)) {
+                log.error("没有发现传感器的值！");
+            }
         }
 
         // 解析传感器状态字符串
-        String ioStatus = String.valueOf(o);
         String[] split = ioStatus.split(",");
         boolean bowlSensor = split[1].equals(SignalLevel.HIGH.getValue()); // 碗传感器状态
         boolean lowerLimit = split[2].equals(SignalLevel.HIGH.getValue()); // 轨道最低极限点状态
@@ -66,8 +69,11 @@ public class BowlService {
                 try {
                     Thread.sleep(Constants.SLEEP_TIME_MS);
                     count++;
-                    Object o1 = redisTemplate.opsForValue().get(Constants.IO_KEY);
-                    ioStatus = String.valueOf(o1);
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
+                    ioStatus = ioDeviceService.getIoStatus();
                     split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
                     if (!bowlSensor) {
@@ -89,9 +95,11 @@ public class BowlService {
                 try {
                     Thread.sleep(Constants.SLEEP_TIME_MS);
                     count++;
-                    Object o1 = redisTemplate.opsForValue().get(Constants.IO_KEY);
-
-                    ioStatus = String.valueOf(o1);
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
+                    ioStatus = ioDeviceService.getIoStatus();
                     split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
                     if (bowlSensor) {
@@ -114,8 +122,8 @@ public class BowlService {
      */
     public void continuousBowlCheck() {
         // 获取传感器状态
-        Object o = redisTemplate.opsForValue().get(Constants.IO_KEY);
-        while (o == null){
+        String ioStatus = ioDeviceService.getIoStatus();
+        while (ioStatus.equals(Constants.NOT_INITIALIZED)) {
             log.error("无法获取传感器的值！");
             // 先重置传感器
             nettyServerHandler.sendMessageToClient(ioIp, Constants.RESET_COMMAND, true);
@@ -126,16 +134,19 @@ public class BowlService {
                 e.printStackTrace();
             }
             // 重新获取传感器状态
-            o = redisTemplate.opsForValue().get(Constants.IO_KEY);
+            ioStatus = ioDeviceService.getIoStatus();
+            if (ioStatus.equals(Constants.NOT_INITIALIZED)) {
+                log.error("没有获取到传感器的值！");
+            }
         }
 
         // 解析传感器状态字符串
-        String[] split = String.valueOf(o).split(",");
+        String[] split = ioStatus.split(",");
         boolean bowlSensor = split[1].equals(SignalLevel.HIGH.getValue()); // 碗传感器状态
         boolean lowerLimit = split[2].equals(SignalLevel.HIGH.getValue()); // 轨道最低极限点状态
         boolean upperLimit = split[3].equals(SignalLevel.HIGH.getValue()); // 轨道最高极限点状态
         //如果传感器无值到达了上限——没有碗了
-        if (!bowlSensor && upperLimit) {
+        if (!bowlSensor && upperLimit){
             log.error("没有碗了！");
             return;
         }
@@ -147,8 +158,12 @@ public class BowlService {
                 try {
                     Thread.sleep(Constants.SLEEP_TIME_MS);
                     count++;
-                    Object o1 = redisTemplate.opsForValue().get(Constants.IO_KEY);
-                    split = String.valueOf(o1).split(",");
+//                    if (count > 300) { // 30秒超时
+//                        log.error("碗升到位超时！");
+//                        return;
+//                    }
+                    ioStatus = ioDeviceService.getIoStatus();
+                    split = ioStatus.split(",");
                     bowlSensor = split[1].equals(SignalLevel.HIGH.getValue());
                     if (bowlSensor) {
                         stepperMotorService.stop(Constants.BOWL_CONTROLLER_NO);
