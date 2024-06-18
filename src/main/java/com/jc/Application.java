@@ -28,7 +28,7 @@ public class Application {
         SpringApplication.run(Application.class, args);
     }
 
-//    @PostConstruct
+    @PostConstruct
     public void openBrowser() {
         try {
             String scriptPath = "C:\\scripts\\open_browser.ps1";
