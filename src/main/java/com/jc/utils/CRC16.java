@@ -50,6 +50,15 @@ public class CRC16 {
         String crc3 = getCRC3(HexConvert.hexStringToBytes(hexString));
         return HexConvert.hexStringToBytes(hexString+crc3);
     }
+    /**
+     * 16进制字符串生成modbus类型的byte[]
+     * @param hexString HEX进制字符串——未加入modbusrtu验证前
+     * @return 加入modbusrtu验证后的数据转为byte[]
+     */
+    public static String getModbusrtuString(String hexString){
+        String crc3 = getCRC3(HexConvert.hexStringToBytes(hexString));
+        return crc3;
+    }
 
     /**
      * 计算CRC16校验码
