@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 @SpringBootApplication(scanBasePackages = "com.jc")
@@ -21,7 +22,7 @@ public class Application {
     }
 
     //启动首页点单页面
-//    @PostConstruct
+    @PostConstruct
     public void openBrowser() {
         try {
             String scriptPath = "C:\\scripts\\open_browser.ps1";
