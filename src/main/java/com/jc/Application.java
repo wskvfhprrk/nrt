@@ -1,9 +1,12 @@
 package com.jc;
 
 import io.netty.channel.ChannelFuture;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -13,7 +16,13 @@ import java.io.IOException;
 
 @SpringBootApplication(scanBasePackages = "com.jc")
 @EnableAsync
+@Slf4j
+@EnableCaching
 public class Application {
+
+    @Autowired
+    private ApplicationContext ctx;
+
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
@@ -31,22 +40,30 @@ public class Application {
     }
 
     @Bean
-    public CommandLineRunner run(ApplicationContext ctx) {
+    public CommandLineRunner run() {
         return args -> {
-            ChannelFuture future = ctx.getBean(ChannelFuture.class);
-            if (future != null) {
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                    try {
-                        future.channel().close();
-                        future.channel().eventLoop().shutdownGracefully();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }));
-                future.channel().closeFuture().sync();
+            // 启动Netty服务器
+            ChannelFuture serverFuture = ctx.getBean("serverBootstrap", ChannelFuture.class);
+            if (serverFuture != null) {
+                serverFuture.sync();
+                log.info("Netty服务器启动成功。");
             } else {
-                System.err.println("Failed to start Netty server.");
+                log.error("Netty服务器启动失败。");
             }
+
+
+            // 添加关闭钩子
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    serverFuture.channel().close();
+                    serverFuture.channel().eventLoop().shutdownGracefully();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }));
+
+            // 阻塞直到服务器通道关闭
+            serverFuture.channel().closeFuture().sync();
         };
     }
 }
