@@ -50,6 +50,15 @@ public class CRC16 {
         String crc3 = getCRC3(HexConvert.hexStringToBytes(hexString));
         return HexConvert.hexStringToBytes(hexString+crc3);
     }
+    /**
+     * 16进制字符串生成modbus类型的byte[]
+     * @param hexString HEX进制字符串——未加入modbusrtu验证前
+     * @return 加入modbusrtu验证后的数据转为byte[]
+     */
+    public static String getModbusrtuString(String hexString){
+        String crc3 = getCRC3(HexConvert.hexStringToBytes(hexString));
+        return crc3;
+    }
 
     /**
      * 计算CRC16校验码
@@ -191,7 +200,7 @@ public class CRC16 {
 //        System.out.println(getCRC3(bytes));
 
         // 示例数据，假设已经从 Modbus RTU 设备读取到的数据
-        byte[] data = HexConvert.hexStringToBytes("09 10 03 E8 00 03 06 00 09 D0 00 FF FF 96 41".replaceAll(" ",""));
+        byte[] data = HexConvert.hexStringToBytes("48 3A 01 41 01 00 00 00 00 00 00 00 C5 45 44 ".replaceAll(" ",""));
         // 验证数据的 CRC16 校验码
         System.out.println("有用的hex字符串数据："+getData(data));
         boolean isValid = validateCRC(data);
